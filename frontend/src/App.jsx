@@ -6,6 +6,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Park from './pages/Park'
 import ExitSummary from './pages/ExitSummary'
+import History from './pages/History'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/park" element={<Park />} />
           <Route path="/exit-summary" element={<ExitSummary />} />
+          <Route path="/history" element={<History />} />
         </Routes>
       </main>
     </>

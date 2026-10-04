@@ -18,6 +18,7 @@ export default function Navbar() {
         {user ? (
           <>
             <Link to="/dashboard">Dashboard</Link>
+            <Link to="/history">History</Link>
             <button className="link-button" onClick={logout}>Logout</button>
           </>
         ) : (
