@@ -54,3 +54,6 @@ a { text-decoration: none; color: inherit; }
 .badge.available { background: var(--green); }
 .badge.occupied { background: var(--red); }
 .section-title { margin: 8px 0 14px; }
+.chosen-space { background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px 16px;
+  border-radius: 8px; margin-bottom: 18px; }
+.back-link { display: inline-block; margin-top: 14px; color: var(--blue); }
