@@ -10,6 +10,7 @@ import ExitSummary from './pages/ExitSummary'
 import History from './pages/History'
 import AdminOverview from './pages/AdminOverview'
 import ManageSpaces from './pages/ManageSpaces'
+import AdminRecords from './pages/AdminRecords'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/history" element={<History />} />
           <Route path="/admin" element={<AdminRoute><AdminOverview /></AdminRoute>} />
           <Route path="/admin/spaces" element={<AdminRoute><ManageSpaces /></AdminRoute>} />
+          <Route path="/admin/records" element={<AdminRoute><AdminRecords /></AdminRoute>} />
         </Routes>
       </main>
     </>
