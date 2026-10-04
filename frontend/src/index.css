@@ -65,3 +65,5 @@ a { text-decoration: none; color: inherit; }
 .session-row span { color: var(--muted); }
 .session-card .btn { margin-top: 16px; }
 .notice { color: var(--muted); margin-bottom: 12px; }
+.success-text { color: var(--green); font-weight: 600; margin-bottom: 14px; }
+.success-text { color: var(--green); font-weight: 600; margin-bottom: 14px; }
