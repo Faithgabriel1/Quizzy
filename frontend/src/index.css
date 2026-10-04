@@ -67,3 +67,5 @@ a { text-decoration: none; color: inherit; }
 .notice { color: var(--muted); margin-bottom: 12px; }
 .success-text { color: var(--green); font-weight: 600; margin-bottom: 14px; }
 .success-text { color: var(--green); font-weight: 600; margin-bottom: 14px; }
+.link-button { background: none; border: none; font: inherit; color: inherit; cursor: pointer; }
+.link-button:hover { color: var(--blue); }
