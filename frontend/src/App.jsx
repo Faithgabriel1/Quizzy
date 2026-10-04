@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
+import AdminRoute from './components/AdminRoute'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -7,6 +8,7 @@ import Dashboard from './pages/Dashboard'
 import Park from './pages/Park'
 import ExitSummary from './pages/ExitSummary'
 import History from './pages/History'
+import AdminOverview from './pages/AdminOverview'
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
           <Route path="/park" element={<Park />} />
           <Route path="/exit-summary" element={<ExitSummary />} />
           <Route path="/history" element={<History />} />
+          <Route path="/admin" element={<AdminRoute><AdminOverview /></AdminRoute>} />
         </Routes>
       </main>
     </>
