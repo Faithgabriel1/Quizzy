@@ -83,3 +83,10 @@ a { text-decoration: none; color: inherit; }
 .table-wrap tr + tr td { border-top: 1px solid #eef2f7; }
 .empty-state { background: white; padding: 32px; border-radius: 12px; text-align: center;
   color: var(--muted); }
+  .stats.four { grid-template-columns: repeat(4, 1fr); }
+  .inline-form { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
+  background: white; padding: 18px; border-radius: 12px; margin-bottom: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+.inline-form .form-group { margin-bottom: 0; }
+.btn-danger { background: var(--red); border-color: var(--red); }
+.table-wrap select { padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; }

@@ -14,7 +14,9 @@ export default function Login() {
       return
     }
     // TEMPORARY: fake login. Replace with POST /api/auth/login when Person 2's auth is ready.
-    localStorage.setItem('user', JSON.stringify({ email }))
+            // TEMPORARY: emails containing "admin" become admins. Replace with the role from the real login API.
+    const role = email.toLowerCase().includes('admin') ? 'admin' : 'user'
+    localStorage.setItem('user', JSON.stringify({ email, role }))
     navigate('/dashboard')
   }
 
