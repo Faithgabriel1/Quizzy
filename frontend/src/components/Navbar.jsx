@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { logout as clearLogin } from '../services/authService'
 
 export default function Navbar() {
   const navigate = useNavigate()
@@ -7,7 +8,7 @@ export default function Navbar() {
   const user = JSON.parse(localStorage.getItem('user') || 'null')
 
   function logout() {
-    localStorage.removeItem('user')
+    clearLogin()
     navigate('/')
   }
 

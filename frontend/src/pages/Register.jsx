@@ -1,5 +1,6 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { register } from '../services/authService'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -8,8 +9,9 @@ export default function Register() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     if (!name || !email || !password) {
       setError('Please fill in all fields.')
@@ -23,9 +25,16 @@ export default function Register() {
       setError('Passwords do not match.')
       return
     }
-    // TEMPORARY: fake registration. Replace with POST /api/auth/register when Person 2's auth is ready.
-    localStorage.setItem('user', JSON.stringify({ name, email, role: 'user' }))
-    navigate('/dashboard')
+    setError('')
+    setLoading(true)
+    try {
+      await register(name, email, password)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -49,7 +58,9 @@ export default function Register() {
           <label>Confirm password</label>
           <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
         </div>
-        <button className="btn" type="submit">Register</button>
+        <button className="btn" type="submit" disabled={loading}>
+          {loading ? 'Creating account...' : 'Register'}
+        </button>
       </form>
       <p className="auth-switch">
         Already have an account? <Link to="/login">Login</Link>
