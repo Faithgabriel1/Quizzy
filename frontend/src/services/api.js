@@ -81,3 +81,56 @@ export function recordPayment({ parkingSession, amount, paymentMethod }) {
     }),
   })
 }
+
+// ---- Reading real data (History and Admin pages) ----
+function minutesBetween(start, end) {
+  if (!start || !end) return null
+  return Math.max(1, Math.round((new Date(end) - new Date(start)) / 60000))
+}
+
+function toSessionRow(s) {
+  const v = s.vehicle || {}
+  const sp = s.parkingSpace || {}
+  return {
+    id: s._id,
+    entryTime: s.entryTime,
+    exitTime: s.exitTime,
+    minutes: minutesBetween(s.entryTime, s.exitTime),
+    vehicleNumber: v.plateNumber || '-',
+    vehicleType: v.vehicleType || '-',
+    spaceNumber: sp.spaceNumber || '-',
+    location: sp.location || '',
+    status: s.status,
+    amount: s.amount,
+  }
+}
+
+function toPaymentRow(p) {
+  const s = p.parkingSession ? toSessionRow(p.parkingSession) : {}
+  return {
+    id: p._id,
+    sessionId: s.id,
+    entryTime: s.entryTime || p.createdAt,
+    exitTime: s.exitTime || null,
+    minutes: s.minutes ?? null,
+    vehicleNumber: s.vehicleNumber || '-',
+    vehicleType: s.vehicleType || '-',
+    spaceNumber: s.spaceNumber || '-',
+    location: s.location || '',
+    amount: p.amount,
+    paymentMethod: p.paymentMethod,
+    paymentStatus: p.paymentStatus,
+  }
+}
+
+// All payments, newest first.
+export async function getPayments() {
+  const list = await request('/payments')
+  return list.map(toPaymentRow)
+}
+
+// All parking sessions, newest first.
+export async function getSessions() {
+  const list = await request('/parking/sessions')
+  return list.map(toSessionRow)
+}
