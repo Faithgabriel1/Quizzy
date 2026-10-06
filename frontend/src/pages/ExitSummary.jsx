@@ -1,11 +1,13 @@
 ﻿import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import { calculateFee } from '../services/api'
+import { calculateFee, completeSession, recordPayment } from '../services/api'
 
 export default function ExitSummary() {
-  const [exitTime] = useState(() => Date.now())
+  const [viewTime] = useState(() => Date.now())
   const [method, setMethod] = useState('Cash')
   const [receipt, setReceipt] = useState(null)
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const user = JSON.parse(localStorage.getItem('user') || 'null')
   const session = JSON.parse(localStorage.getItem('session') || 'null')
@@ -41,25 +43,65 @@ export default function ExitSummary() {
     )
   }
 
-  const elapsedMs = exitTime - new Date(session.entryTime).getTime()
-  const minutes = Math.max(0, Math.floor(elapsedMs / 60000))
-  const amount = calculateFee(elapsedMs / 3600000)
+  // A session saved before the server was connected has no server ID
+  if (!session.sessionId) {
+    return (
+      <div className="auth-card">
+        <h1>Old session</h1>
+        <p>This session was created before the server was connected, so it cannot be ended here.</p>
+        <button
+          className="btn"
+          onClick={() => {
+            localStorage.removeItem('session')
+            window.location.href = '/dashboard'
+          }}
+        >
+          Clear it
+        </button>
+      </div>
+    )
+  }
 
-  function confirmPayment() {
-    const record = {
-      ...session,
-      exitTime: new Date(exitTime).toISOString(),
-      minutes,
-      amount,
-      paymentMethod: method,
-      paymentStatus: 'paid',
+  const elapsedMs = viewTime - new Date(session.entryTime).getTime()
+  const minutesNow = Math.max(0, Math.floor(elapsedMs / 60000))
+  const estimate = calculateFee(elapsedMs / 3600000)
+
+  async function confirmPayment() {
+    setError('')
+    setSaving(true)
+    try {
+      // 1. The server ends the session, works out the fee and frees the space
+      const done = await completeSession(session.sessionId)
+      // 2. Record the payment for that fee
+      await recordPayment({
+        parkingSession: session.sessionId,
+        amount: done.amount,
+        paymentMethod: method,
+      })
+
+      const minutes = Math.max(
+        0,
+        Math.floor((new Date(done.exitTime) - new Date(session.entryTime)) / 60000)
+      )
+      const record = {
+        ...session,
+        exitTime: done.exitTime,
+        minutes,
+        amount: done.amount,
+        paymentMethod: method,
+        paymentStatus: 'paid',
+      }
+      // TEMPORARY: history pages still read from the browser.
+      // Replace with GET /api/payments when those pages are connected.
+      const history = JSON.parse(localStorage.getItem('history') || '[]')
+      localStorage.setItem('history', JSON.stringify([record, ...history]))
+      localStorage.removeItem('session')
+      setReceipt(record)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSaving(false)
     }
-    // TEMPORARY: keep records in the browser.
-    // Replace with PUT /api/parking-records/:id and POST /api/payments when the backend is ready.
-    const history = JSON.parse(localStorage.getItem('history') || '[]')
-    localStorage.setItem('history', JSON.stringify([record, ...history]))
-    localStorage.removeItem('session')
-    setReceipt(record)
   }
 
   return (
@@ -68,9 +110,10 @@ export default function ExitSummary() {
       <div className="session-row"><span>Vehicle</span><strong>{session.vehicleNumber}</strong></div>
       <div className="session-row"><span>Space</span><strong>{session.spaceNumber} - {session.location}</strong></div>
       <div className="session-row"><span>Entry time</span><strong>{new Date(session.entryTime).toLocaleTimeString()}</strong></div>
-      <div className="session-row"><span>Exit time</span><strong>{new Date(exitTime).toLocaleTimeString()}</strong></div>
-      <div className="session-row"><span>Time parked</span><strong>{minutes} min</strong></div>
-      <div className="session-row"><span>Amount due</span><strong>₦{amount.toLocaleString()}</strong></div>
+      <div className="session-row"><span>Time parked</span><strong>{minutesNow} min</strong></div>
+      <div className="session-row"><span>Estimated amount</span><strong>₦{estimate.toLocaleString()}</strong></div>
+
+      {error && <p className="error" style={{ marginTop: 12 }}>{error}</p>}
 
       <div className="form-group" style={{ marginTop: 18 }}>
         <label>Payment method</label>
@@ -80,7 +123,9 @@ export default function ExitSummary() {
           <option>Transfer</option>
         </select>
       </div>
-      <button className="btn" onClick={confirmPayment}>Confirm payment</button>
+      <button className="btn" onClick={confirmPayment} disabled={saving}>
+        {saving ? 'Processing...' : 'Confirm payment'}
+      </button>
       <Link to="/dashboard" className="back-link">Cancel</Link>
     </div>
   )
