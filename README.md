@@ -1,5 +1,17 @@
 # Parking Management App
 
+Parking Management App helps small car parks track parking spaces, vehicle entry and exit, and payments. Drivers park and pay, and admins manage spaces and see all records.
+
+## Live Demo
+
+- App: https://parkease-appp.netlify.app
+- API: https://quizzy-4ocs.onrender.com
+- API docs (Swagger): https://quizzy-4ocs.onrender.com/api-docs
+
+The backend is on a free plan, so the first request after a quiet period can take up to a minute.
+
+## Overview
+
 A parking management system with a Node.js/Express backend, MongoDB database and JWT authentication. Users can register, log in, create vehicles and parking sessions, and make payments. Admins can also create parking spaces.
 
 ## Requirements
@@ -49,6 +61,16 @@ npm run dev
 
 You should see "Parking Management API running on http://localhost:5000" and "MongoDB connected successfully".
 
+5. Start the frontend, in a second terminal:
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend reads the backend address from `VITE_API_URL` and uses `http://localhost:5000/api` when it isn't set.
+
 ## API Routes
 
 Base URL: `http://localhost:5000/api`
@@ -94,6 +116,16 @@ All routes except register and login need a token. Send it as `Authorization: Be
 | POST | /payments | Create a payment for a session |
 | GET | /payments | Get all payments |
 | GET | /payments/:id | Get one payment |
+
+### Response format
+
+Every response uses the same structure:
+
+```json
+{ "success": true, "message": "Parking space created successfully", "data": { } }
+```
+
+Errors return `"success": false` with a message, for example `{ "success": false, "message": "Admins only" }`.
 
 ## Testing with Postman
 
