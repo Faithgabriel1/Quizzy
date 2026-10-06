@@ -16,8 +16,8 @@ const { verifyToken, requireAdminFor } = require("./middleware/auth");
 dotenv.config();
 
 const app = express();
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Connect database
 connectDB();
@@ -26,8 +26,8 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-//API routes
-// Login and register are open to everyone.
+
+
 app.use("/api/auth", authRoutes);
 
 // Everything below needs a logged-in user. Some actions are admin only.
@@ -35,7 +35,6 @@ app.use("/api/parking/spaces", verifyToken, requireAdminFor(["POST", "PUT", "DEL
 app.use("/api/vehicles", verifyToken, requireAdminFor(["PUT", "DELETE"]), vehicleRoutes);
 app.use("/api/parking/sessions", verifyToken, requireAdminFor(["GET"], true), parkingSessionRoutes);
 app.use("/api/payments", verifyToken, paymentRoutes);
-
 
 // Test route
 app.get("/", (req, res) => {
