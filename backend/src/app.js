@@ -10,6 +10,7 @@ const parkingSpaceRoutes = require("./routes/parkingSpaceRoutes");
 const vehicleRoutes = require("./routes/vehicleRoutes");
 const parkingSessionRoutes = require("./routes/parkingSessionRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use(cors());
 app.use(express.json());
 
 //API routes
+app.use("/api/auth", authRoutes);
 app.use("/api/parking/spaces", parkingSpaceRoutes);
 app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/parking/sessions", parkingSessionRoutes);
