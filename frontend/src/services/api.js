@@ -9,16 +9,26 @@ export function calculateFee(hours) {
 
 // The backend answers { success, message, data }. This unwraps it and turns errors into messages.
 async function request(path, options = {}) {
+  const token = localStorage.getItem('token')
   let res
   try {
     res = await fetch(`${API_URL}${path}`, {
-      headers: { 'Content-Type': 'application/json' },
       ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
     })
   } catch {
     throw new Error('Cannot reach the server. Is the backend running?')
   }
   const body = await res.json().catch(() => ({}))
+  if (res.status === 401) {
+    // Not logged in, or the login expired: clear it and go to the login page.
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    if (window.location.pathname !== '/login') window.location.href = '/login'
+  }
   if (!res.ok) throw new Error(body.message || 'Something went wrong')
   return body.data
 }

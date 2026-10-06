@@ -11,6 +11,7 @@ const vehicleRoutes = require("./routes/vehicleRoutes");
 const parkingSessionRoutes = require("./routes/parkingSessionRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const authRoutes = require("./routes/authRoutes");
+const { verifyToken, requireAdminFor } = require("./middleware/auth");
 
 dotenv.config();
 
@@ -25,12 +26,15 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-// API routes
+
+
 app.use("/api/auth", authRoutes);
-app.use("/api/parking/spaces", parkingSpaceRoutes);
-app.use("/api/vehicles", vehicleRoutes);
-app.use("/api/parking/sessions", parkingSessionRoutes);
-app.use("/api/payments", paymentRoutes);
+
+// Everything below needs a logged-in user. Some actions are admin only.
+app.use("/api/parking/spaces", verifyToken, requireAdminFor(["POST", "PUT", "DELETE"]), parkingSpaceRoutes);
+app.use("/api/vehicles", verifyToken, requireAdminFor(["PUT", "DELETE"]), vehicleRoutes);
+app.use("/api/parking/sessions", verifyToken, requireAdminFor(["GET"], true), parkingSessionRoutes);
+app.use("/api/payments", verifyToken, paymentRoutes);
 
 // Test route
 app.get("/", (req, res) => {
