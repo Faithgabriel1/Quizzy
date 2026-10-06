@@ -1,23 +1,30 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { login } from '../services/authService'
 
 export default function Login() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     if (!email || !password) {
       setError('Please enter your email and password.')
       return
     }
-    // TEMPORARY: fake login. Replace with POST /api/auth/login when Person 2's auth is ready.
-            // TEMPORARY: emails containing "admin" become admins. Replace with the role from the real login API.
-    const role = email.toLowerCase().includes('admin') ? 'admin' : 'user'
-    localStorage.setItem('user', JSON.stringify({ email, role }))
-    navigate('/dashboard')
+    setError('')
+    setLoading(true)
+    try {
+      await login(email, password)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -33,7 +40,9 @@ export default function Login() {
           <label>Password</label>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
-        <button className="btn" type="submit">Login</button>
+        <button className="btn" type="submit" disabled={loading}>
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
       </form>
       <p className="auth-switch">
         No account? <Link to="/register">Register</Link>

@@ -10,13 +10,13 @@ const parkingSpaceRoutes = require("./routes/parkingSpaceRoutes");
 const vehicleRoutes = require("./routes/vehicleRoutes");
 const parkingSessionRoutes = require("./routes/parkingSessionRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
-const authRoutes = require('./authRoutes');
+const authRoutes = require("./routes/authRoutes");
 
 dotenv.config();
 
 const app = express();
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Connect database
 connectDB();
@@ -25,13 +25,12 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-//API routes
+// API routes
+app.use("/api/auth", authRoutes);
 app.use("/api/parking/spaces", parkingSpaceRoutes);
 app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/parking/sessions", parkingSessionRoutes);
 app.use("/api/payments", paymentRoutes);
-app.use('/api/auth', authRoutes);
-
 
 // Test route
 app.get("/", (req, res) => {
