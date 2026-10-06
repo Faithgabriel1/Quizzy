@@ -1,5 +1,6 @@
 ﻿import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { startParking } from '../services/api'
 
 export default function Park() {
   const navigate = useNavigate()
@@ -9,6 +10,7 @@ export default function Park() {
   const [vehicleNumber, setVehicleNumber] = useState('')
   const [vehicleType, setVehicleType] = useState('Car')
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const user = JSON.parse(localStorage.getItem('user') || 'null')
   if (!user) return <Navigate to="/login" replace />
@@ -24,23 +26,40 @@ export default function Park() {
     )
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
+    setError('')
     if (!vehicleNumber.trim()) {
       setError('Please enter the vehicle number.')
       return
     }
-    // TEMPORARY: store the session locally.
-    // Replace with POST /api/parking-records when Person 3's backend is ready.
-    const session = {
-      vehicleNumber: vehicleNumber.trim().toUpperCase(),
-      vehicleType,
-      spaceNumber: space.spaceNumber,
-      location: space.location,
-      entryTime: new Date().toISOString(),
+    setSaving(true)
+    try {
+      const created = await startParking({
+        plateNumber: vehicleNumber.trim(),
+        vehicleType: vehicleType.toLowerCase(),
+        ownerName: user.name || user.email,
+        space,
+      })
+      // The dashboard uses this to show "your current parking".
+      // TEMPORARY: replace with a per-user lookup when login is connected.
+      localStorage.setItem(
+        'session',
+        JSON.stringify({
+          sessionId: created._id,
+          vehicleNumber: created.vehicle.plateNumber,
+          vehicleType: created.vehicle.vehicleType,
+          spaceNumber: created.parkingSpace.spaceNumber,
+          location: created.parkingSpace.location,
+          entryTime: created.entryTime,
+        })
+      )
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSaving(false)
     }
-    localStorage.setItem('session', JSON.stringify(session))
-    navigate('/dashboard')
   }
 
   return (
@@ -67,7 +86,9 @@ export default function Park() {
             <option>Truck</option>
           </select>
         </div>
-        <button className="btn" type="submit">Confirm parking</button>
+        <button className="btn" type="submit" disabled={saving}>
+          {saving ? 'Saving...' : 'Confirm parking'}
+        </button>
       </form>
       <Link to="/dashboard" className="back-link">Cancel</Link>
     </div>

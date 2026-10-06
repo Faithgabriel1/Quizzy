@@ -1,19 +1,33 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getSessions, getPayments } from '../services/api'
 
 export default function AdminRecords() {
   const [search, setSearch] = useState('')
+  const [sessions, setSessions] = useState([])
+  const [payments, setPayments] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  // TEMPORARY: read from the browser.
-  // Replace with GET /api/parking-records and GET /api/payments when the backend is ready.
-  const session = JSON.parse(localStorage.getItem('session') || 'null')
-  const history = JSON.parse(localStorage.getItem('history') || '[]')
+  useEffect(() => {
+    Promise.all([getSessions(), getPayments()])
+      .then(([se, pa]) => {
+        setSessions(se)
+        setPayments(pa)
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [])
 
-  const rows = [
-    ...(session
-      ? [{ ...session, exitTime: null, minutes: null, amount: null, paymentMethod: null, paymentStatus: 'parked' }]
-      : []),
-    ...history,
-  ]
+  // Match each session with its payment (if it has one).
+  const rows = sessions.map((s) => {
+    const pay = payments.find((p) => p.sessionId === s.id)
+    return {
+      ...s,
+      amount: pay ? pay.amount : s.status === 'completed' ? s.amount : null,
+      paymentMethod: pay ? pay.paymentMethod : null,
+      paymentStatus: pay ? pay.paymentStatus : s.status === 'active' ? 'parked' : 'unpaid',
+    }
+  })
 
   const term = search.trim().toLowerCase()
   const filtered = rows.filter(
@@ -22,7 +36,9 @@ export default function AdminRecords() {
       r.vehicleNumber.toLowerCase().includes(term) ||
       r.spaceNumber.toLowerCase().includes(term)
   )
-  const totalPaid = history.reduce((sum, r) => sum + r.amount, 0)
+  const totalPaid = payments
+    .filter((p) => p.paymentStatus === 'paid')
+    .reduce((sum, p) => sum + p.amount, 0)
 
   return (
     <div>
@@ -31,9 +47,12 @@ export default function AdminRecords() {
         <p>Every parking session and payment.</p>
       </div>
 
+      {loading && <p>Loading...</p>}
+      {error && <p className="error">{error}</p>}
+
       <div className="stats">
         <div className="stat"><strong>{rows.length}</strong><span>Total records</span></div>
-        <div className="stat"><strong>{history.length}</strong><span>Completed payments</span></div>
+        <div className="stat"><strong>{payments.length}</strong><span>Completed payments</span></div>
         <div className="stat"><strong>₦{totalPaid.toLocaleString()}</strong><span>Total paid</span></div>
       </div>
 
@@ -42,7 +61,7 @@ export default function AdminRecords() {
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="e.g. A01" />
       </div>
 
-      {filtered.length === 0 ? (
+      {!loading && filtered.length === 0 ? (
         <div className="empty-state">No records found.</div>
       ) : (
         <div className="table-wrap">
@@ -62,8 +81,8 @@ export default function AdminRecords() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((r, i) => (
-                <tr key={i}>
+              {filtered.map((r) => (
+                <tr key={r.id}>
                   <td>{new Date(r.entryTime).toLocaleDateString()}</td>
                   <td>{r.vehicleNumber}</td>
                   <td>{r.vehicleType}</td>
