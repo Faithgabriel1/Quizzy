@@ -10,6 +10,7 @@ const parkingSpaceRoutes = require("./routes/parkingSpaceRoutes");
 const vehicleRoutes = require("./routes/vehicleRoutes");
 const parkingSessionRoutes = require("./routes/parkingSessionRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const authRoutes = require('./authRoutes');
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use("/api/parking/spaces", parkingSpaceRoutes);
 app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/parking/sessions", parkingSessionRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use('/api/auth', authRoutes);
 
 
 // Test route
